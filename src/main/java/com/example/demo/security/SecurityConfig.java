@@ -8,6 +8,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.access.vote.RoleHierarchyVoter;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -43,6 +44,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                //.antMatcher("/admin/**").addFilter(filterSecurityInterceptor())//필터추가할때 위에 일반 예외 antMatcher가 안먹힘 ..??
                 .authorizeRequests()
                 .antMatchers("/**/*.js", "/**/*.js.map", "/**/*.ts", "/**/*.css"
                         ,"/**/*.css.map", "/**/*.png", "/**/*.gif", "/**/*.jpg", "/**/*.fco"
@@ -51,8 +53,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 ).permitAll()
                 .antMatchers("/","/login","/denied").permitAll()
                 .antMatchers("/**").permitAll()
-                .and()
-                .addFilter(filterSecurityInterceptor())//필터추가할때 위에 일반 예외 antMatcher가 안먹힘 ..??
+                .withObjectPostProcessor(new ObjectPostProcessor<FilterSecurityInterceptor>() {
+                    public <O extends FilterSecurityInterceptor> O postProcess( O filterSecurityInterceptor) {
+                        filterSecurityInterceptor.setPublishAuthorizationSuccess(true);
+                        //filterSecurityInterceptor.setAuthenticationManager(authenticationManagerBean());
+                        filterSecurityInterceptor.setSecurityMetadataSource(filterInvocationSecurityMetadataSource);
+                        filterSecurityInterceptor.setAccessDecisionManager(affirmativeBased());
+                        return filterSecurityInterceptor;
+                    }
+                });
                 ;
         http
                 .exceptionHandling().accessDeniedPage("/denied")

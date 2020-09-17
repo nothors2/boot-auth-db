@@ -35,6 +35,7 @@ public class FilterMetadataSource implements FilterInvocationSecurityMetadataSou
     public Collection<ConfigAttribute> getAttributes(Object object) throws IllegalArgumentException {
         FilterInvocation fi = (FilterInvocation) object;
         String url = fi.getRequestUrl();
+        System.out.println("FilterMetadataSource:"+ url);
         AntPathMatcher pathMatcher = new AntPathMatcher();
         String[] anyOnlUrl = new String[]{"/","/login","/**/*.js", "/**/*.js.map", "/**/*.ts", "/**/*.css"
                 ,"/**/*.css.map", "/**/*.png", "/**/*.gif", "/**/*.jpg", "/**/*.fco"
